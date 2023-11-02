@@ -21,16 +21,14 @@ import('node-fetch').then((module) => {
         const response = await fetch(url);
         const htmlContent = await response.text();
         const $ = cheerio.load(htmlContent);
-        const url_ = `https://myanimelist.net/anime/${req.params.id}/episode`;
-        const response_ = await fetch(url_);
-        const htmlContent_ = await response.text();
-        const $_ = cheerio.load(htmlContent_);
-
+          
         const title = $('.title-name.h1_bold_none').text();
         const description = $('[itemprop="description"]').text()
         const spaceIt = $('.spaceit_pad').text()
         const animeInfo = spaceIt.split("\n")
-        const episodes = $_('.di-ib.pl4.fw-n.fs10').text().replace('(', '').split("/")[0]
+        const episodes = (animeInfo[animeInfo.findIndex((anime) => {
+            return anime.toLowerCase().trim().startsWith("episodes");
+        }) + 1]).trim()
         const type = (animeInfo[animeInfo.findIndex((anime) => {
             return anime.toLowerCase().trim().startsWith("type");
         }) + 1]).trim()
