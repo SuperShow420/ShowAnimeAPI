@@ -1,5 +1,5 @@
 const express = require('express')
-const port = 3000
+const port = 80
 const cors = require('cors')
 const app = express()
 const cheerio = require('cheerio');
@@ -21,14 +21,18 @@ import('node-fetch').then((module) => {
         const response = await fetch(url);
         const htmlContent = await response.text();
         const $ = cheerio.load(htmlContent);
-          
+        const url_ = `https://myanimelist.net/anime/${req.params.id}/episode`;
+        const response_ = await fetch(url_);
+        const htmlContent_ = await response_.text();
+        const $_ = cheerio.load(htmlContent_);
+
+        console.log($_('.di-ib.pl4.fw-n.fs10').text(), $('.title-name.h1_bold_none').text())
+
         const title = $('.title-name.h1_bold_none').text();
         const description = $('[itemprop="description"]').text()
         const spaceIt = $('.spaceit_pad').text()
         const animeInfo = spaceIt.split("\n")
-        const episodes = (animeInfo[animeInfo.findIndex((anime) => {
-            return anime.toLowerCase().trim().startsWith("episodes");
-        }) + 1]).trim()
+        const episodes = $_('.di-ib.pl4.fw-n.fs10').text().replace('(', '').split("/")[0]
         const type = (animeInfo[animeInfo.findIndex((anime) => {
             return anime.toLowerCase().trim().startsWith("type");
         }) + 1]).trim()
@@ -55,8 +59,32 @@ import('node-fetch').then((module) => {
             return anime.toLowerCase().trim().startsWith("duration");
         }) + 1]).trimStart()
 
+        var otherNames = []
+
+        let spaceit = $('.spaceit_pad')
+        
+        for (let i = 0; i < spaceit.length; i++) {
+            
+            if (spaceit.eq(i).find('.dark_text').text() == "Type:") {
+                
+                for (let index = 0; index < i; index++) {
+                    
+                    otherNames.push(spaceit.eq(index).contents().last().text().trim())
+                    
+                }
+                
+            }
+            
+        }
+
+        console.log(otherNames)
+        
+        
+        
+        
         console.log({
             'title' : title,
+            "otherNames" : otherNames,
             'description' : description,
             'episodes' : episodes,
             'type' : type,
@@ -67,13 +95,14 @@ import('node-fetch').then((module) => {
         })
         res.send({
             'title' : title,
+            "otherNames" : otherNames,
             'description' : description,
             'episodes' : episodes,
             'type' : type,
             'status' : status,
             'aired' : aired,
             'genre' : genre,
-            'duration' : duration
+            'duration' : duration,
         });
       } catch (error) {
         console.error('Fetch error:', error);
