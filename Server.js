@@ -79,6 +79,8 @@ import('node-fetch').then((module) => {
             
         }
 
+        otherNames.push(title)
+
         console.log(otherNames)
         
         
