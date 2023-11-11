@@ -32,7 +32,9 @@ import('node-fetch').then((module) => {
         const description = $('[itemprop="description"]').text()
         const spaceIt = $('.spaceit_pad').text()
         const animeInfo = spaceIt.split("\n")
-        const episodes = $_('.di-ib.pl4.fw-n.fs10').text().replace('(', '').split("/")[0]
+        const episodes = (animeInfo[animeInfo.findIndex((anime) => {
+            return anime.toLowerCase().trim().startsWith("episode");
+        }) + 1]).trim()
         const type = (animeInfo[animeInfo.findIndex((anime) => {
             return anime.toLowerCase().trim().startsWith("type");
         }) + 1]).trim()
