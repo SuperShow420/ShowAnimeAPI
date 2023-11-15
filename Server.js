@@ -7,6 +7,36 @@ const cheerio = require('cheerio');
 var stringSimilarity = require('string-similarity')
 const Anime = require('./ShowAnimeData.js')
 
+mongoose.connect("mongodb+srv://supershow420:UQzGbfR9MMn5Sdx3@cluster2151.ogv0pdi.mongodb.net/?retryWrites=true&w=majority", 
+        
+    {
+        useNewUrlParser : true,
+        useUnifiedTopology : true
+    }
+
+)
+        
+var db = mongoose.connection
+
+db.on('error', console.error.bind(console, 'connection error'))
+
+db.once('open', function() {
+    console.log("connected to database")
+})
+
+const epSchema = new mongoose.Schema({
+    episodeNum : Number,
+    link : Object
+});
+
+const data = mongoose.model('downloadlink', {
+    saId : Number,
+    malId : Number,
+    animeName : String,
+    engSub : [epSchema],
+    engDub : [epSchema]
+})
+
 app.listen(port, () => {
     console.log("listening on port 80", stringSimilarity.compareTwoStrings("bleach", "blach")                                  )
 })
@@ -114,6 +144,104 @@ import('node-fetch').then((module) => {
       }
     });
   });
+
+app.post('/link/:malId', (req, res) => {
+console.log(req.body)
+    data.findOne({malId : req.params.malId})
+        .then(dataExists => {
+            if (dataExists) {
+
+                const data_ = {
+                    episodeNum : req.body.epNum,
+                    link : req.body.link
+                }
+                
+                if (req.body.lang == "engSub") {
+                    dataExists.engSub.push(data_)
+                    dataExists.save()
+                    .then(savedVideoDetails => {
+                        res.status(200).send(savedVideoDetails)
+                        console.log(savedVideoDetails, "data saved")
+                    })
+                    .catch(err => {
+                        console.error(err, "Error while saving video details")
+                    })
+                }
+                if (req.body.lang == "engDub") {
+                    dataExists.engSub.push(data_)
+                    dataExists.save()
+                    .then(savedVideoDetails => {
+                        console.log(savedVideoDetails, "data saved")
+                    })
+                    .catch(err => {
+                        console.error(err, "Error while saving video details")
+                    })
+                }
+
+        
+            } else {
+                console.log("anime does not exist")
+            }
+        })
+
+})
+
+app.post('/getlink', async (req, res) => {
+    console.log(req.body, req.body.url)
+    try {
+        console.log(req.body, req.body.url);
+
+        let headersList = {
+            "Accept": "*/*",
+            "User-Agent": "Thunder Client (https://www.thunderclient.com)"
+        };
+
+        let response = await fetch(req.body.url, {
+            method: "GET",
+            headers: headersList
+        });
+
+        let data = await response.text();
+
+        const $ = cheerio.load(data);
+        const aElement = $('div.favorites_book li.dowloads a').first();
+
+        console.log(aElement.attr('href'));
+        res.json(aElement.attr('href'));
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+})
+
+app.post('/add-downlod-link-object/:id', (req, res) => {
+    data.findOne({malId : req.params.id})
+        .then(dataExists => {
+            
+            if (dataExists) {
+
+                console.log("data exists")
+                res.send("data already exists")
+        
+            } else {
+                const data_ = new data({
+                    malId : req.params.id,
+                    animeName : req.body.title
+                })
+                data_.save()
+                .then(savedVideoDetails => {
+                    console.log(savedVideoDetails, "data saved")
+                    res.send("data saved")
+                })
+                .catch(err => {
+                    console.error(err, "Error while saving video details")
+                    res.send("error")
+                })
+            }
+            
+        })
+})
 
 app.get('/anime-details-all/:id', (req, res) => {
 
