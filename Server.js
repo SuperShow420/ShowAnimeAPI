@@ -43,6 +43,7 @@ app.listen(port, () => {
 })
 
 app.use(cors());
+app.use(express.json());
 
 import('node-fetch').then((module) => {
     const fetch = module.default;
