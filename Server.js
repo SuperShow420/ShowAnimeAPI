@@ -3,6 +3,7 @@ const port = 80
 const cors = require('cors')
 const app = express()
 const cheerio = require('cheerio');
+const mongoose = require("mongoose")
 
 var stringSimilarity = require('string-similarity')
 const Anime = require('./ShowAnimeData.js')
